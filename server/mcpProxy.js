@@ -337,7 +337,7 @@ app.post('/api/jira/issue/:issueKey/status', async (req, res) => {
       name: 'jira_add_comment',
       arguments: {
         issueIdOrKey: issueKey,
-        comment: statusComment
+        commentBody: statusComment
       }
     });
 
