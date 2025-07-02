@@ -49,6 +49,110 @@ describe('Login Component', () => {
     });
   });
 
+  // JIRA SCRUM-3 Acceptance Criteria Tests - Green Background and Black Border
+  describe('JIRA SCRUM-3: Green background and black border acceptance criteria', () => {
+    test('should render login container with green background', () => {
+      render(<Login />);
+      const loginContainer = screen.getByRole('group', { hidden: true });
+      const containerStyles = window.getComputedStyle(loginContainer);
+      
+      // Check for green background color (#28a745)
+      expect(containerStyles.backgroundColor).toBe('rgb(40, 167, 69)'); // #28a745 in RGB
+    });
+
+    test('should render login container with black border', () => {
+      render(<Login />);
+      const loginContainer = screen.getByRole('group', { hidden: true });
+      const containerStyles = window.getComputedStyle(loginContainer);
+      
+      // Check for black border (3px solid #000000)
+      expect(containerStyles.border).toContain('3px');
+      expect(containerStyles.border).toContain('solid');
+      expect(containerStyles.border).toContain('rgb(0, 0, 0)'); // Black color
+    });
+
+    test('should render login heading with green color theme', () => {
+      render(<Login />);
+      const heading = screen.getByRole('heading', { name: /login/i });
+      const headingStyles = window.getComputedStyle(heading);
+      
+      // Check for green text color to match theme
+      expect(headingStyles.color).toBe('rgb(40, 167, 69)'); // #28a745 in RGB
+    });
+
+    test('should render input fields with green border theme', () => {
+      render(<Login />);
+      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const passwordInput = screen.getByPlaceholderText(/password/i);
+      
+      const usernameStyles = window.getComputedStyle(usernameInput);
+      const passwordStyles = window.getComputedStyle(passwordInput);
+      
+      // Check for green borders on input fields
+      expect(usernameStyles.border).toContain('rgb(40, 167, 69)'); // Green border
+      expect(passwordStyles.border).toContain('rgb(40, 167, 69)'); // Green border
+    });
+
+    test('should render login button with green background theme', () => {
+      render(<Login />);
+      const loginButton = screen.getByRole('button', { name: /login/i });
+      const buttonStyles = window.getComputedStyle(loginButton);
+      
+      // Check for green button background
+      expect(buttonStyles.backgroundColor).toBe('rgb(40, 167, 69)'); // #28a745 in RGB
+    });
+
+    test('should maintain green theme consistency across all elements', () => {
+      render(<Login />);
+      
+      // Get all themed elements
+      const container = screen.getByRole('group', { hidden: true });
+      const heading = screen.getByRole('heading', { name: /login/i });
+      const usernameInput = screen.getByPlaceholderText(/username/i);
+      const loginButton = screen.getByRole('button', { name: /login/i });
+      
+      // Check that all elements use the same green color (#28a745 = rgb(40, 167, 69))
+      const greenColor = 'rgb(40, 167, 69)';
+      expect(window.getComputedStyle(container).backgroundColor).toBe(greenColor);
+      expect(window.getComputedStyle(heading).color).toBe(greenColor);
+      expect(window.getComputedStyle(usernameInput).border).toContain(greenColor);
+      expect(window.getComputedStyle(loginButton).backgroundColor).toBe(greenColor);
+    });
+
+    test('should render error messages with green theme styling', async () => {
+      render(<Login />);
+      
+      // Trigger an error by submitting empty form
+      const loginButton = screen.getByRole('button', { name: /login/i });
+      fireEvent.click(loginButton);
+      
+      await waitFor(() => {
+        const errorMessage = screen.getByText(/please enter both username and password/i);
+        const errorStyles = window.getComputedStyle(errorMessage);
+        
+        // Check for green error styling
+        expect(errorStyles.color).toBe('rgb(40, 167, 69)'); // Green text
+        expect(errorStyles.backgroundColor).toBe('rgb(212, 237, 218)'); // Light green background
+      });
+    });
+
+    test('should preserve SCRUM-3 styling during loading state', async () => {
+      const mockOnLogin = jest.fn();
+      render(<Login onLogin={mockOnLogin} />);
+      
+      // Fill form and submit to trigger loading state
+      fireEvent.change(screen.getByPlaceholderText(/username/i), { target: { value: 'testuser' } });
+      fireEvent.change(screen.getByPlaceholderText(/password/i), { target: { value: 'testpass' } });
+      fireEvent.click(screen.getByRole('button', { name: /login/i }));
+      
+      // Check that green theme is maintained during loading
+      const container = screen.getByRole('group', { hidden: true });
+      const containerStyles = window.getComputedStyle(container);
+      expect(containerStyles.backgroundColor).toBe('rgb(40, 167, 69)'); // Green background preserved
+      expect(containerStyles.border).toContain('rgb(0, 0, 0)'); // Black border preserved
+    });
+  });
+
   // Functionality Tests
   describe('Login Functionality', () => {
     it('should handle successful login with valid credentials', async () => {
