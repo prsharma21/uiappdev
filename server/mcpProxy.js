@@ -362,6 +362,50 @@ app.post('/api/jira/issue/:issueKey/status', async (req, res) => {
   }
 });
 
+// API endpoint to add comment to JIRA issue
+app.post('/api/jira/issue/:issueKey/add-comment', async (req, res) => {
+  try {
+    const { issueKey } = req.params;
+    const { commentBody } = req.body;
+    console.log(`\n💬 API Request: Add comment to JIRA issue ${issueKey}`);
+
+    if (!commentBody) {
+      return res.status(400).json({
+        success: false,
+        error: 'commentBody is required',
+        issueKey: issueKey,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const result = await callMCPServer('tools/call', {
+      name: 'jira_add_comment',
+      arguments: {
+        issueIdOrKey: issueKey,
+        commentBody: commentBody
+      }
+    });
+
+    console.log(`✅ Successfully added comment to ${issueKey}`);
+    res.json({
+      success: true,
+      issueKey: issueKey,
+      comment: commentBody,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error(`❌ Error adding comment to issue ${req.params.issueKey}:`, error.message);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      issueKey: req.params.issueKey,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
