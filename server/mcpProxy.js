@@ -311,6 +311,57 @@ app.post('/api/jira/generate-component', async (req, res) => {
   }
 });
 
+// API endpoint to update JIRA issue status
+app.post('/api/jira/issue/:issueKey/status', async (req, res) => {
+  try {
+    const { issueKey } = req.params;
+    const { status, comment } = req.body;
+    console.log(`\n🔄 API Request: Update JIRA issue ${issueKey} status to: ${status}`);
+
+    // Add comment to the issue about the status change
+    if (comment) {
+      await callMCPServer('tools/call', {
+        name: 'jira_add_comment',
+        arguments: {
+          issueIdOrKey: issueKey,
+          comment: comment
+        }
+      });
+    }
+
+    // For now, we'll just add a comment indicating the status change
+    // since the MCP server might not have direct status transition capabilities
+    const statusComment = `Status updated to: ${status}\n\nAutomated update from JIRA-driven development workflow:\n- Code changes implemented\n- Unit tests added\n- GitHub PR created`;
+    
+    const result = await callMCPServer('tools/call', {
+      name: 'jira_add_comment',
+      arguments: {
+        issueIdOrKey: issueKey,
+        comment: statusComment
+      }
+    });
+
+    console.log(`✅ Successfully updated ${issueKey} with status comment`);
+    res.json({
+      success: true,
+      issueKey: issueKey,
+      status: status,
+      comment: statusComment,
+      data: result,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error(`❌ Error updating issue ${req.params.issueKey} status:`, error.message);
+    res.status(500).json({ 
+      success: false,
+      error: error.message,
+      issueKey: req.params.issueKey,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {

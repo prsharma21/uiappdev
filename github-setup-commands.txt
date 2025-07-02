@@ -1,0 +1,15 @@
+# GitHub Repository Setup Commands
+# Run these commands to push to your created repository: uiappdev
+
+# Add GitHub remote (using your actual repository)
+git remote add origin https://github.com/prsharma21/uiappdev.git
+
+# Push master branch
+git push -u origin master
+
+# Push feature branch for SCRUM-2
+git push origin feature/scrum-2-red-background-grey-border
+
+# Create Pull Request (manual step)
+# Go to https://github.com/prsharma21/uiappdev and create PR from feature branch to master
+# Use the content from PR_DESCRIPTION_SCRUM-2.md as the PR description
