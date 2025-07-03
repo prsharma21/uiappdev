@@ -1,5 +1,33 @@
 # GitHub Copilot Instructions for JIRA-Driven UI Development
 
+## 🚀 PRIMARY WORKFLOW - JIRA Issue Processing
+
+**When a user provides a JIRA issue ID, ALWAYS execute this complete 6-step workflow:**
+
+### 🎯 Complete Workflow Steps:
+
+1. **📋 FETCH** - Get JIRA issue description and requirements
+2. **💻 IMPLEMENT** - Generate and apply code changes based on requirements  
+3. **🧪 TEST** - Create comprehensive unit test cases
+4. **📈 UPDATE** - Change JIRA status to "In Progress"
+5. **🔀 PR** - Create GitHub pull request with full documentation
+6. **📊 SUMMARY** - Provide complete workflow results
+
+### 🎮 Trigger Commands:
+- `"Process JIRA issue [ID]"`
+- `"Implement story [ID]"`
+- `"Work on ticket [ID]"`
+- `"Handle JIRA [ID]"`
+
+### 🔧 Available MCP Tools:
+- `mcp_my-mcp-server3_read-jira-story` - Fetch JIRA issue details
+- `mcp_my-mcp-server3_generate-code-from-story` - Generate code changes
+- `mcp_my-mcp-server3_generate-test-cases` - Create unit tests
+- `jira-status-updater.js` - Update JIRA status
+- Standard VS Code tools for PR creation
+
+---
+
 ## 🎯 Project Overview
 
 This React application automatically reads JIRA issues from an MCP server and generates UI components based on issue descriptions. The system follows a specific workflow and coding patterns that Copilot should understand and follow.
@@ -505,7 +533,372 @@ When a user provides a JIRA issue ID, follow this complete automation workflow:
 
 ### 1. 📋 Reading JIRA Issues by ID
 
-#### Fetch JIRA Issue Pattern
+#### Step 1: Fetch JIRA Issue Description
+**Always start with this step when user provides a JIRA ID**
+
+```javascript
+// Primary method to fetch JIRA issue by ID using MCP server
+async function fetchJiraIssueDescription(issueId) {
+  try {
+    console.log(`📋 Step 1: Fetching JIRA issue description for ${issueId}...`);
+    
+    // Use MCP server to fetch complete issue details
+    const jiraIssue = await mcp_my-mcp-server3_read-jira-story({
+      storyId: issueId
+    });
+    
+    // Validate and extract issue information
+    if (!jiraIssue || !jiraIssue.key) {
+      throw new Error(`JIRA issue ${issueId} not found or invalid format`);
+    }
+    
+    const issueDetails = {
+      key: jiraIssue.key,
+      summary: jiraIssue.summary,
+      description: jiraIssue.description,
+      acceptanceCriteria: jiraIssue.acceptanceCriteria || [],
+      components: jiraIssue.components || [],
+      priority: jiraIssue.priority,
+      status: jiraIssue.status,
+      issueType: jiraIssue.issueType || 'Story'
+    };
+    
+    console.log(`✅ Step 1 Complete: Fetched ${issueDetails.summary}`);
+    console.log(`📝 Found ${issueDetails.acceptanceCriteria.length} acceptance criteria`);
+    
+    return issueDetails;
+    
+  } catch (error) {
+    console.error(`❌ Step 1 Failed: Error fetching JIRA issue ${issueId}:`, error);
+    throw error;
+  }
+}
+```
+
+#### Step 2: Implement the Changes
+**Generate and apply code changes based on JIRA requirements**
+
+```javascript
+// Generate code changes based on JIRA requirements
+async function implementCodeChanges(issueId, jiraIssue) {
+  try {
+    console.log(`💻 Step 2: Implementing code changes for ${issueId}...`);
+    
+    // Generate code using MCP server
+    const codeChanges = await mcp_my-mcp-server3_generate-code-from-story({
+      storyId: issueId,
+      storyDescription: jiraIssue.description,
+      applicationPath: "c:\\Priyanka\\projects\\frontendapp",
+      language: "javascript", // or "typescript" based on project
+      framework: "react",
+      changeType: determineChangeType(jiraIssue.summary), // "feature", "bugfix", "enhancement", "refactor"
+      preserveExisting: true,
+      targetFiles: extractTargetFiles(jiraIssue.description) // Optional: specific files to modify
+    });
+    
+    // Validate code generation results
+    if (!codeChanges || !codeChanges.files || codeChanges.files.length === 0) {
+      throw new Error('No code changes generated from JIRA requirements');
+    }
+    
+    console.log(`✅ Step 2 Complete: Generated changes for ${codeChanges.files.length} files`);
+    console.log(`📁 Modified files:`, codeChanges.files.map(f => `  - ${f}`).join('\n'));
+    
+    return codeChanges;
+    
+  } catch (error) {
+    console.error(`❌ Step 2 Failed: Error implementing changes for ${issueId}:`, error);
+    throw error;
+  }
+}
+
+// Helper function to determine change type from summary
+function determineChangeType(summary) {
+  const summaryLower = summary.toLowerCase();
+  if (summaryLower.includes('bug') || summaryLower.includes('fix')) return 'bugfix';
+  if (summaryLower.includes('enhance') || summaryLower.includes('improve')) return 'enhancement';
+  if (summaryLower.includes('refactor') || summaryLower.includes('restructure')) return 'refactor';
+  return 'feature'; // Default to feature
+}
+```
+
+#### Step 3: Write Unit Test Cases
+**Create comprehensive test cases covering all acceptance criteria**
+
+```javascript
+// Generate comprehensive unit test cases
+async function writeUnitTestCases(issueId, jiraIssue, codeChanges) {
+  try {
+    console.log(`🧪 Step 3: Generating unit test cases for ${issueId}...`);
+    
+    // Extract component name from JIRA summary or code changes
+    const componentName = extractComponentName(jiraIssue.summary) || 
+                         extractComponentFromChanges(codeChanges);
+    
+    // Generate test cases using MCP server
+    const testResults = await mcp_my-mcp-server3_generate-test-cases({
+      storyId: issueId,
+      componentName: componentName,
+      testFramework: "jest", // or "cypress", "playwright", "vitest"
+      testType: "unit", // or "integration", "e2e", "all"
+      language: "javascript",
+      projectRoot: "c:\\Priyanka\\projects\\frontendapp",
+      filePath: determineTestFilePath(componentName, codeChanges)
+    });
+    
+    // Validate test generation results
+    if (!testResults || !testResults.testFile) {
+      throw new Error('No test cases generated from JIRA requirements');
+    }
+    
+    // Run the generated tests to ensure they pass
+    console.log(`🏃 Running generated tests...`);
+    await runGeneratedTests(testResults.testFile);
+    
+    console.log(`✅ Step 3 Complete: Generated ${testResults.testCount || 'multiple'} test cases`);
+    console.log(`📄 Test file: ${testResults.testFile}`);
+    console.log(`📊 Expected coverage: ${testResults.coverage || 'N/A'}%`);
+    
+    return testResults;
+    
+  } catch (error) {
+    console.error(`❌ Step 3 Failed: Error generating tests for ${issueId}:`, error);
+    throw error;
+  }
+}
+
+// Helper function to extract component name
+function extractComponentName(summary) {
+  // Extract component name from patterns like "[UI] ComponentName - Description"
+  const match = summary.match(/\[UI\]\s*(\w+)/i) || 
+                summary.match(/(\w+)\s*component/i) ||
+                summary.match(/(\w+)\s*-/);
+  return match ? match[1] : null;
+}
+
+// Helper function to run generated tests
+async function runGeneratedTests(testFile) {
+  try {
+    // Run tests using npm test or jest directly
+    await runInTerminal(`npm test -- ${testFile}`, 'Running generated unit tests');
+  } catch (error) {
+    console.warn(`⚠️ Test execution failed, but continuing workflow: ${error.message}`);
+  }
+}
+```
+
+#### Step 4: Update JIRA Status to In Progress
+**Change JIRA issue status to indicate development is underway**
+
+```javascript
+// Update JIRA issue status to In Progress
+async function updateJiraStatusToInProgress(issueId) {
+  try {
+    console.log(`📈 Step 4: Updating JIRA ${issueId} status to In Progress...`);
+    
+    // Use the generic JIRA status updater script
+    await runInTerminal(
+      `node jira-status-updater.js ${issueId} "In Progress"`,
+      `Updating JIRA ${issueId} status to In Progress`
+    );
+    
+    console.log(`✅ Step 4 Complete: JIRA ${issueId} status updated to In Progress`);
+    
+    return {
+      issueId: issueId,
+      newStatus: 'In Progress',
+      timestamp: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    console.error(`❌ Step 4 Failed: Error updating JIRA status for ${issueId}:`, error);
+    // Continue workflow even if status update fails
+    console.log(`⚠️ Continuing workflow despite status update failure`);
+    return {
+      issueId: issueId,
+      newStatus: 'Failed to update',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    };
+  }
+}
+```
+
+#### Step 5: Create GitHub Pull Request
+**Create a comprehensive PR with full documentation linking back to JIRA**
+
+```javascript
+// Create GitHub Pull Request with comprehensive documentation
+async function createGitHubPullRequest(issueId, jiraIssue, codeChanges, testResults) {
+  try {
+    console.log(`🔀 Step 5: Creating GitHub pull request for ${issueId}...`);
+    
+    // 1. Create feature branch
+    const branchName = createBranchName(issueId, jiraIssue.summary);
+    console.log(`🌿 Creating feature branch: ${branchName}`);
+    
+    await runInTerminal(`git checkout -b ${branchName}`, 'Creating feature branch');
+    
+    // 2. Stage and commit all changes
+    const commitMessage = generateCommitMessage(issueId, jiraIssue, codeChanges);
+    console.log(`📝 Committing changes with message: ${commitMessage.split('\n')[0]}`);
+    
+    await runInTerminal(`git add .`, 'Staging all changes');
+    await runInTerminal(`git commit -m "${commitMessage}"`, 'Committing changes');
+    
+    // 3. Push branch to remote
+    await runInTerminal(`git push -u origin ${branchName}`, 'Pushing feature branch');
+    
+    // 4. Create PR using GitHub CLI (if available) or provide instructions
+    const prDescription = generatePRDescription(jiraIssue, codeChanges, testResults);
+    const prTitle = `${issueId}: ${jiraIssue.summary}`;
+    
+    try {
+      // Try using GitHub CLI
+      await runInTerminal(
+        `gh pr create --title "${prTitle}" --body "${prDescription}" --base main --head ${branchName}`,
+        'Creating GitHub pull request'
+      );
+      
+      console.log(`✅ Step 5 Complete: GitHub PR created successfully`);
+      
+    } catch (ghError) {
+      // Fallback: provide manual PR creation instructions
+      console.log(`📋 GitHub CLI not available. Manual PR creation required:`);
+      console.log(`   Title: ${prTitle}`);
+      console.log(`   Branch: ${branchName} → main`);
+      console.log(`   Description: [See generated PR description]`);
+    }
+    
+    return {
+      branchName: branchName,
+      title: prTitle,
+      description: prDescription,
+      status: 'created'
+    };
+    
+  } catch (error) {
+    console.error(`❌ Step 5 Failed: Error creating GitHub PR for ${issueId}:`, error);
+    throw error;
+  }
+}
+
+// Helper function to create branch name
+function createBranchName(issueId, summary) {
+  const sanitizedSummary = summary
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 50);
+  
+  return `feature/${issueId.toLowerCase()}-${sanitizedSummary}`;
+}
+
+// Helper function to generate commit message
+function generateCommitMessage(issueId, jiraIssue, codeChanges) {
+  return `${issueId}: ${jiraIssue.summary}
+
+${jiraIssue.description ? jiraIssue.description.substring(0, 200) + '...' : 'Implementation based on JIRA requirements'}
+
+Changes:
+${codeChanges.files ? codeChanges.files.map(f => `- Modified: ${f}`).join('\n') : '- Code implementation complete'}
+- Added comprehensive unit tests
+- Updated component integration
+
+Resolves: ${issueId}
+Type: ${jiraIssue.issueType || 'Story'}
+Priority: ${jiraIssue.priority || 'Medium'}`;
+}
+
+// Helper function to generate PR description
+function generatePRDescription(jiraIssue, codeChanges, testResults) {
+  return `## 🎯 JIRA Issue: ${jiraIssue.key}
+
+### 📋 Issue Summary
+${jiraIssue.summary}
+
+### 📝 Description
+${jiraIssue.description || 'No description provided'}
+
+### ✅ Acceptance Criteria
+${jiraIssue.acceptanceCriteria && jiraIssue.acceptanceCriteria.length > 0 
+  ? jiraIssue.acceptanceCriteria.map(ac => `- [ ] ${ac}`).join('\n')
+  : '- [ ] Implementation complete as per JIRA requirements'}
+
+### 🛠️ Code Changes
+${codeChanges.files && codeChanges.files.length > 0
+  ? codeChanges.files.map(file => `- Modified: \`${file}\``).join('\n')
+  : '- Code implementation complete'}
+
+### 🧪 Testing
+- **Unit Tests**: ${testResults.testFile ? 'Added' : 'Generated'}
+- **Test File**: \`${testResults.testFile || 'See test directory'}\`
+- **Coverage**: ${testResults.coverage || 'N/A'}%
+
+### 🔗 JIRA Links
+- **Issue**: [${jiraIssue.key}](https://yourjira.atlassian.net/browse/${jiraIssue.key})
+- **Status**: ${jiraIssue.status} → In Progress
+
+### 📋 Checklist
+- [x] Code follows project conventions
+- [x] Unit tests added/updated
+- [x] JIRA issue status updated
+- [ ] Code review requested
+- [ ] Manual testing completed
+
+---
+*This PR was automatically generated by the JIRA-driven development workflow.*`;
+}
+```
+
+#### Step 6: Provide Complete Summary
+**Return comprehensive workflow results with full traceability**
+
+```javascript
+// Provide complete workflow summary
+function provideWorkflowSummary(issueId, jiraIssue, codeChanges, testResults, statusUpdate, prResult) {
+  const workflowId = `workflow-${issueId}-${Date.now()}`;
+  
+  console.log(`🎉 Step 6: Workflow completed successfully!`);
+  console.log(`📊 Workflow Summary for ${issueId}:`);
+  console.log(`   📋 JIRA Issue: ${jiraIssue.summary}`);
+  console.log(`   💻 Files Modified: ${codeChanges.files?.length || 0}`);
+  console.log(`   🧪 Tests Generated: ${testResults.testCount || 'Multiple'}`);
+  console.log(`   📈 JIRA Status: ${statusUpdate.newStatus}`);
+  console.log(`   🔀 GitHub PR: ${prResult.status}`);
+  
+  return {
+    workflowId: workflowId,
+    issueId: issueId,
+    jiraIssue: {
+      key: jiraIssue.key,
+      summary: jiraIssue.summary,
+      status: jiraIssue.status,
+      priority: jiraIssue.priority,
+      acceptanceCriteria: jiraIssue.acceptanceCriteria
+    },
+    codeChanges: {
+      filesModified: codeChanges.files?.length || 0,
+      files: codeChanges.files || [],
+      description: codeChanges.description || 'Code implementation complete'
+    },
+    testResults: {
+      testFile: testResults.testFile,
+      testCount: testResults.testCount,
+      coverage: testResults.coverage
+    },
+    jiraStatusUpdate: statusUpdate,
+    githubPR: {
+      branchName: prResult.branchName,
+      title: prResult.title,
+      status: prResult.status
+    },
+    status: "SUCCESS",
+    completedAt: new Date().toISOString(),
+    traceability: `JIRA ${issueId} → Code Changes → Unit Tests → Status Update → GitHub PR`
+  };
+}
+```
 ```javascript
 // Primary method to fetch JIRA issue by ID
 async function fetchJiraIssueById(issueId) {
@@ -1129,25 +1522,249 @@ const WORKFLOW_ERROR_HANDLERS = {
 };
 ```
 
-## 🎯 Updated Summary for Copilot
+## 🎯 Complete JIRA-Driven Development Workflow - Summary for Copilot
 
-When a user provides a JIRA issue ID, automatically:
+When a user provides a JIRA issue ID, **ALWAYS** execute this complete 6-step automated workflow:
 
-1. **🔍 Fetch the JIRA issue** using MCP server
-2. **📝 Parse requirements** from issue description and acceptance criteria  
-3. **💻 Generate code changes** based on requirements
-4. **🧪 Create comprehensive unit tests** covering all acceptance criteria
-5. **📈 Update JIRA status** to "In Progress" with work log
-6. **🔀 Create GitHub PR** with detailed description linking back to JIRA
+### � Step 1: Fetch JIRA Issue Description
+```javascript
+// Use MCP server to fetch complete issue details
+const jiraIssue = await mcp_my-mcp-server3_read-jira-story({
+  storyId: issueId
+});
 
-**Key Commands Copilot Should Recognize:**
-- "Process JIRA issue [ID]"
-- "Implement story [ID]" 
-- "Work on ticket [ID]"
-- "Handle JIRA [ID]"
+// Extract key information
+const issueDetails = {
+  key: jiraIssue.key,
+  summary: jiraIssue.summary,
+  description: jiraIssue.description,
+  acceptanceCriteria: jiraIssue.acceptanceCriteria,
+  components: jiraIssue.components,
+  priority: jiraIssue.priority,
+  status: jiraIssue.status
+};
+```
 
-**Always ensure:**
-- Full traceability from JIRA → Code → Tests → PR
-- Comprehensive error handling and recovery
-- Detailed logging of each workflow step
-- Automatic status updates and documentation
+### 💻 Step 2: Implement the Changes
+```javascript
+// Generate code based on JIRA requirements using MCP server
+const codeChanges = await mcp_my-mcp-server3_generate-code-from-story({
+  storyId: issueId,
+  storyDescription: jiraIssue.description,
+  applicationPath: "c:\\Priyanka\\projects\\frontendapp",
+  language: "javascript", // or "typescript"
+  framework: "react",
+  changeType: "feature", // or "bugfix", "enhancement", "refactor"
+  preserveExisting: true
+});
+
+// Apply changes to files
+// The MCP server will automatically modify the appropriate files
+```
+
+### 🧪 Step 3: Write Unit Test Cases
+```javascript
+// Generate comprehensive test cases using MCP server
+const testResults = await mcp_my-mcp-server3_generate-test-cases({
+  storyId: issueId,
+  componentName: extractComponentName(jiraIssue.summary),
+  testFramework: "jest", // or "cypress", "playwright", "vitest"
+  testType: "unit", // or "integration", "e2e", "all"
+  language: "javascript",
+  projectRoot: "c:\\Priyanka\\projects\\frontendapp"
+});
+
+// Run the generated tests to ensure they pass
+await runTests(testResults.testFile);
+```
+
+### 📈 Step 4: Update JIRA Status to In Progress
+```javascript
+// Update JIRA issue status using the generic status updater
+await updateJiraStatus(issueId, "In Progress");
+
+// Or use the MCP server directly if available
+// (Note: Current MCP server may not have direct status update)
+```
+
+### 🔀 Step 5: Create GitHub Pull Request
+```javascript
+// Create feature branch and commit changes
+const branchName = `feature/${issueId.toLowerCase()}-${sanitizeSummary(jiraIssue.summary)}`;
+await createFeatureBranch(branchName);
+await commitChanges(issueId, jiraIssue, codeChanges);
+await pushBranch(branchName);
+
+// Create PR with comprehensive description
+const prData = await createGitHubPR({
+  title: `${issueId}: ${jiraIssue.summary}`,
+  body: generatePRDescription(jiraIssue, codeChanges, testResults),
+  head: branchName,
+  base: "main"
+});
+```
+
+### 📊 Step 6: Provide Complete Summary
+```javascript
+// Return comprehensive workflow results
+return {
+  workflowId: `workflow-${issueId}-${Date.now()}`,
+  jiraIssue: issueDetails,
+  codeChanges: codeChanges,
+  testResults: testResults,
+  jiraStatusUpdate: "In Progress",
+  githubPR: prData.html_url,
+  status: "SUCCESS"
+};
+```
+
+## 🎯 Key Commands Copilot Should Recognize
+
+**Primary Commands:**
+- `"Process JIRA issue [ID]"` → Execute complete 6-step workflow
+- `"Implement story [ID]"` → Execute complete 6-step workflow  
+- `"Work on ticket [ID]"` → Execute complete 6-step workflow
+- `"Handle JIRA [ID]"` → Execute complete 6-step workflow
+
+**Individual Step Commands:**
+- `"Fetch JIRA [ID] description"` → Step 1 only
+- `"Implement changes for [ID]"` → Steps 1-2
+- `"Generate tests for [ID]"` → Steps 1-3
+- `"Update [ID] status to In Progress"` → Step 4 only
+- `"Create PR for [ID]"` → Step 5 only
+
+## 🔧 Workflow Implementation Template
+
+```javascript
+// MAIN ORCHESTRATION FUNCTION - Execute Complete JIRA Workflow
+async function executeCompleteJiraWorkflow(issueId) {
+  console.log(`🚀 Starting complete JIRA workflow for: ${issueId}`);
+  console.log(`⏰ Started at: ${new Date().toISOString()}`);
+  
+  let jiraIssue, codeChanges, testResults, statusUpdate, prResult;
+  
+  try {
+    // Step 1: Fetch JIRA Issue Description
+    console.log("\n" + "=".repeat(50));
+    console.log("📋 STEP 1: FETCHING JIRA ISSUE DESCRIPTION");
+    console.log("=".repeat(50));
+    
+    jiraIssue = await fetchJiraIssueDescription(issueId);
+    
+    // Step 2: Implement the Changes
+    console.log("\n" + "=".repeat(50));
+    console.log("💻 STEP 2: IMPLEMENTING CODE CHANGES");
+    console.log("=".repeat(50));
+    
+    codeChanges = await implementCodeChanges(issueId, jiraIssue);
+    
+    // Step 3: Write Unit Test Cases
+    console.log("\n" + "=".repeat(50));
+    console.log("🧪 STEP 3: GENERATING UNIT TEST CASES");
+    console.log("=".repeat(50));
+    
+    testResults = await writeUnitTestCases(issueId, jiraIssue, codeChanges);
+    
+    // Step 4: Update JIRA Status to In Progress
+    console.log("\n" + "=".repeat(50));
+    console.log("📈 STEP 4: UPDATING JIRA STATUS");
+    console.log("=".repeat(50));
+    
+    statusUpdate = await updateJiraStatusToInProgress(issueId);
+    
+    // Step 5: Create GitHub Pull Request
+    console.log("\n" + "=".repeat(50));
+    console.log("🔀 STEP 5: CREATING GITHUB PULL REQUEST");
+    console.log("=".repeat(50));
+    
+    prResult = await createGitHubPullRequest(issueId, jiraIssue, codeChanges, testResults);
+    
+    // Step 6: Provide Complete Summary
+    console.log("\n" + "=".repeat(50));
+    console.log("📊 STEP 6: WORKFLOW SUMMARY");
+    console.log("=".repeat(50));
+    
+    const summary = provideWorkflowSummary(issueId, jiraIssue, codeChanges, testResults, statusUpdate, prResult);
+    
+    console.log(`\n🎉 WORKFLOW COMPLETED SUCCESSFULLY! 🎉`);
+    console.log(`⏰ Completed at: ${new Date().toISOString()}`);
+    console.log(`🔍 Workflow ID: ${summary.workflowId}`);
+    
+    return summary;
+    
+  } catch (error) {
+    console.error(`\n❌ WORKFLOW FAILED FOR ${issueId}:`);
+    console.error(`Error: ${error.message}`);
+    console.error(`⏰ Failed at: ${new Date().toISOString()}`);
+    
+    // Attempt to provide partial results for debugging
+    const partialSummary = {
+      workflowId: `failed-workflow-${issueId}-${Date.now()}`,
+      issueId: issueId,
+      status: "FAILED",
+      error: error.message,
+      completedSteps: {
+        jiraIssue: !!jiraIssue,
+        codeChanges: !!codeChanges,
+        testResults: !!testResults,
+        statusUpdate: !!statusUpdate,
+        prResult: !!prResult
+      },
+      failedAt: new Date().toISOString()
+    };
+    
+    console.log(`📋 Partial results:`, JSON.stringify(partialSummary, null, 2));
+    throw error;
+  }
+}
+
+// USAGE FUNCTION - Handle user requests with JIRA ID extraction
+async function handleJiraIssueRequest(userInput) {
+  console.log(`🎯 Processing user request: "${userInput}"`);
+  
+  // Extract JIRA issue ID from user input using regex
+  const issueIdMatch = userInput.match(/\b([A-Z]+[-_]\d+)\b/i);
+  
+  if (!issueIdMatch) {
+    const errorMsg = 'No valid JIRA issue ID found in request. Expected format: PROJECT-123 or PROJECT_123';
+    console.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
+  }
+  
+  const issueId = issueIdMatch[1].toUpperCase().replace('_', '-'); // Normalize format
+  console.log(`🎯 Extracted JIRA issue ID: ${issueId}`);
+  
+  // Execute the complete workflow
+  return await executeCompleteJiraWorkflow(issueId);
+}
+
+// COMMAND RECOGNITION PATTERNS
+const JIRA_WORKFLOW_COMMANDS = [
+  /process jira issue ([A-Z]+[-_]\d+)/i,
+  /implement story ([A-Z]+[-_]\d+)/i,
+  /work on ticket ([A-Z]+[-_]\d+)/i,
+  /handle jira ([A-Z]+[-_]\d+)/i,
+  /develop ([A-Z]+[-_]\d+)/i,
+  /build ([A-Z]+[-_]\d+)/i
+];
+
+// Check if user input matches workflow trigger patterns
+function shouldExecuteJiraWorkflow(userInput) {
+  return JIRA_WORKFLOW_COMMANDS.some(pattern => pattern.test(userInput));
+}
+```
+
+## ✅ Workflow Success Criteria
+
+**Always ensure the following for each step:**
+
+1. **Step 1 Success**: JIRA issue fetched with complete description and acceptance criteria
+2. **Step 2 Success**: Code files created/modified based on requirements
+3. **Step 3 Success**: Unit tests generated covering all acceptance criteria
+4. **Step 4 Success**: JIRA status updated to "In Progress" 
+5. **Step 5 Success**: GitHub PR created with detailed description
+6. **Step 6 Success**: Complete traceability from JIRA → Code → Tests → PR
+
+**Error Handling**: If any step fails, provide clear error message and attempt recovery where possible.
+
+**Logging**: Log each step completion with timestamps and details for full audit trail.

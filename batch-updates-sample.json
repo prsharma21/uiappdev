@@ -1,0 +1,24 @@
+{
+  "updates": [
+    {
+      "issueKey": "SCRUM-1",
+      "targetStatus": "In Progress",
+      "comment": "Moving to in progress - development started"
+    },
+    {
+      "issueKey": "SCRUM-2", 
+      "targetStatus": "In Review",
+      "comment": "Code complete, ready for review"
+    },
+    {
+      "issueKey": "SCRUM-3",
+      "targetStatus": "Done",
+      "comment": "Testing complete, deployment successful"
+    }
+  ],
+  "settings": {
+    "delayBetweenUpdates": 1000,
+    "continueOnError": true,
+    "logResults": true
+  }
+}
