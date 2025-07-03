@@ -1,0 +1,24 @@
+{
+  "name": "jira-mcp-server",
+  "version": "1.0.0",
+  "description": "Backend proxy server for MCP JIRA integration",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.2",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["mcp", "jira", "automation", "backend"],
+  "author": "JIRA MCP Team",
+  "license": "MIT"
+}

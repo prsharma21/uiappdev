@@ -1,19 +1,8 @@
 {
-    "servers": {
-        "my-mcp-server-1f947d6f": {
-            "type": "stdio",
-            "command": "node",
-            "args": ["C:\\Priyanka\\projects\\mcp-server-atlassian-jira-main\\mcp-server-atlassian-jira-main\\src\\index.ts"]
-        }
-        ,
-      "github": {
+  "servers": {
+    "localMcp": {
       "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-       "requestInit": {
-      "headers": {
-        "Authorization": "Bearer YOUR_GITHUB_TOKEN_HERE"
-      }
-}
+      "url": "http://localhost:8080"
     }
-    }
+  }
 }
