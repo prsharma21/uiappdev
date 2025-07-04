@@ -7,10 +7,7 @@ import React, { useState } from 'react';
 // Added white border to the blue background container
 
 // JIRA Issue SCRUM-2: "Create red background and grey border in Login page of socialmediaapp" - IMPLEMENTED
-// Updated background color to red (#dc3545) and border to grey as requested
-
-// JIRA Issue SCRUM-3: "Create green background and black border in Login Page" - IMPLEMENTED
-// Updated background color to green (#28a745) and border to black as requested
+// Changed background color to red (#dc3545) and border to grey (#6c757d)
 
 function Login({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -70,8 +67,8 @@ function Login({ onLogin }) {
 
   return (
     <div style={{
-      backgroundColor: '#28a745', // Green background as requested in SCRUM-3
-      border: '3px solid #000000', // Black border as requested in SCRUM-3
+      backgroundColor: '#dc3545', // Red background as requested in SCRUM-2
+      border: '3px solid #6c757d', // Grey border as requested in SCRUM-2
       padding: '2rem',
       borderRadius: '8px',
       boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
@@ -85,7 +82,7 @@ function Login({ onLogin }) {
         boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
       }}>
         <h2 style={{
-          color: '#28a745', // Green text color to match new theme
+          color: '#dc3545', // Red text color to match new theme
           textAlign: 'center',
           marginBottom: '1.5rem'
         }}>Login</h2>
@@ -101,7 +98,7 @@ function Login({ onLogin }) {
             disabled={loading}
             style={{
               padding: '0.75rem',
-              border: '2px solid #28a745', // Green border to match new theme
+              border: '2px solid #dc3545', // Red border to match new theme
               borderRadius: '4px',
               fontSize: '1rem',
               opacity: loading ? 0.6 : 1
@@ -115,7 +112,7 @@ function Login({ onLogin }) {
             disabled={loading}
             style={{
               padding: '0.75rem',
-              border: '2px solid #28a745', // Green border to match new theme
+              border: '2px solid #dc3545', // Red border to match new theme
               borderRadius: '4px',
               fontSize: '1rem',
               opacity: loading ? 0.6 : 1
@@ -125,7 +122,7 @@ function Login({ onLogin }) {
             type="submit"
             disabled={loading}
             style={{
-              backgroundColor: loading ? '#6c757d' : '#28a745', // Green button to match new theme
+              backgroundColor: loading ? '#6c757d' : '#dc3545', // Red button to match new theme
               color: 'white',
               padding: '0.75rem',
               border: 'none',
@@ -158,13 +155,13 @@ function Login({ onLogin }) {
         </form>
         {error && (
           <div style={{
-            color: '#28a745',
+            color: '#dc3545',
             textAlign: 'center',
             marginTop: '1rem',
             padding: '0.5rem',
-            backgroundColor: '#d4edda',
+            backgroundColor: '#f8d7da',
             borderRadius: '4px',
-            border: '1px solid #c3e6cb'
+            border: '1px solid #f5c6cb'
           }}>
             {error}
           </div>
