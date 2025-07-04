@@ -1,30 +1,49 @@
 import React, { useState } from 'react';
+import apiService from './services/apiService';
+
+// Backend Integration: Connected to Spring Boot backend at http://localhost:8082
 
 function CreatePost({ user, onPostCreated }) {
   const [content, setContent] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+    
     if (!content.trim()) {
       setError('Post content cannot be empty');
+      setLoading(false);
       return;
     }
+
     try {
-      const res = await fetch('/api/posts/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, content })
-      });
-      if (res.ok) {
-        setContent('');
-        if (onPostCreated) onPostCreated();
-      } else {
-        setError('Failed to create post');
+      const postData = {
+        content: content.trim(),
+        userId: user?.id || user?.username, // Flexible user identification
+        author: user?.username || user?.name || 'Anonymous'
+      };
+
+      console.log('Creating post with backend at http://localhost:8082...');
+      console.log('Post data:', postData);
+      
+      const response = await apiService.createPost(postData);
+      
+      console.log('Post created successfully:', response);
+      setContent('');
+      
+      // Notify parent component to refresh posts
+      if (onPostCreated) {
+        onPostCreated();
       }
-    } catch {
-      setError('Server error');
+      
+    } catch (error) {
+      console.error('Failed to create post:', error);
+      setError(error.message || 'Failed to create post. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,21 +78,27 @@ function CreatePost({ user, onPostCreated }) {
         />
         <button 
           type="submit"
+          disabled={loading}
           style={{
             padding: '10px 20px',
-            backgroundColor: '#007bff',
+            backgroundColor: loading ? '#6c757d' : '#007bff',
             color: 'white',
             border: 'none',
             borderRadius: '6px',
-            cursor: 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
             fontWeight: '500',
             fontSize: '14px',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s',
+            opacity: loading ? 0.7 : 1
           }}
-          onMouseOver={e => e.target.style.backgroundColor = '#0056b3'}
-          onMouseOut={e => e.target.style.backgroundColor = '#007bff'}
+          onMouseOver={e => {
+            if (!loading) e.target.style.backgroundColor = '#0056b3';
+          }}
+          onMouseOut={e => {
+            if (!loading) e.target.style.backgroundColor = '#007bff';
+          }}
         >
-          Post
+          {loading ? 'Creating Post...' : 'Post'}
         </button>
       </form>
       {error && (
